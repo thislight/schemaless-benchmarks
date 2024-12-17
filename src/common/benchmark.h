@@ -36,6 +36,7 @@
 
 #define BENCHMARK_LANGUAGE_C   "C"
 #define BENCHMARK_LANGUAGE_CXX "C++"
+#define BENCHMARK_LANGUAGE_ZIG "Zig"
 
 #define BENCHMARK_NODE_MAX         (32*4096) /* upper bound */
 #define BENCHMARK_VERSION 0.1

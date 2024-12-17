@@ -19,7 +19,7 @@
 # IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
 # CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
-import csv, sys
+import csv, sys, os
 from functools import reduce
 from math import sqrt
 
@@ -38,6 +38,7 @@ urlrefs = {
     "json-builder-lib": "https://github.com/udp/json-builder",
     "ubj": "https://github.com/Steve132/ubj",
     "mongo-cxx": "https://github.com/mongodb/mongo-cxx-driver",
+    "zigpak": "https://github.com/thislight/zigpak",
 }
 
 info = { # fullname, urlref, config
@@ -59,6 +60,7 @@ info = { # fullname, urlref, config
     "ubj-": ["ubj", "ubj", ""],
     "ubj-opt-": ["ubj", "ubj", " \\[optimized]"],
     "mongo-cxx-": ["MongoDB Legacy", "mongo-cxx", ""],
+    "zigpak-": ["Zigpak", "zigpak", ""],
 }
 
 size_results = len(sys.argv) > 1 and sys.argv[1] == "size"
@@ -108,6 +110,7 @@ with open(csvname) as csvfile:
             continue
 
         sizedata = data[int(row[OBJECT_SIZE])]
+        row[NAME] = os.path.basename(row[NAME])
         name = row[NAME]
 
         # add the row once, but replace the time with a list containing all times found
