@@ -300,6 +300,7 @@ for size in range(1,6):
     addrow(rows, sizedata, 'jansson-dump', True)
     addrow(rows, sizedata, 'libbson-append', True)
     addrow(rows, sizedata, 'mongo-cxx-builder', True)
+    addrow(rows, sizedata, 'zigpak-write', True)
     if extended:
         addrow(rows, sizedata, 'binn-write', True)
         addrow(rows, sizedata, 'json-builder', True)
@@ -345,6 +346,7 @@ for size in range(1,6):
     addrow(rows, sizedata, 'yajl-parse', False)
     addrow(rows, sizedata, 'libbson-iter', False)
     addrow(rows, sizedata, 'mongo-cxx-obj', False)
+    addrow(rows, sizedata, 'zigpak-read', False)
     if extended:
         addrow(rows, sizedata, 'binn-load', False)
         addrow(rows, sizedata, 'mpack-utf8-read', False)

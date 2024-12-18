@@ -36,7 +36,7 @@ pub const DataFile = struct {
     }
 };
 
-const inSituCopying = true;
+const inSituCopying = false;
 
 pub inline fn copyIfInSitu(data: []const u8) ![]const u8 {
     if (!inSituCopying) {
@@ -76,15 +76,18 @@ pub fn hash(comptime T: type, ohash: u32, value: T) u32 {
     };
 }
 
+extern fn benchmark_object_create(objectSize: usize) *Object;
+extern fn object_destroy(object: *Object) void;
+
 pub const Object = extern struct {
     type: Type,
     len: u32,
     value: extern union {
         b: bool,
-        d: bool,
+        d: f64,
         i: i64,
         u: u64,
-        children: ?*Object,
+        children: [*]Object,
         str: [*:0]c_char,
     },
 
@@ -98,4 +101,12 @@ pub const Object = extern struct {
         array,
         map,
     };
+
+    pub fn create(size: usize) *@This() {
+        return benchmark_object_create(size);
+    }
+
+    pub fn deinit(self: *@This()) void {
+        object_destroy(self);
+    }
 };

@@ -17,6 +17,7 @@ fn setDefaultFlags(b: *std.Build.Step.Compile, opt: TestOptimizeTarget) void {
     b.addIncludePath(b.step.owner.path("src/common/"));
     b.root_module.pic = true;
     b.root_module.addCMacro("NDEBUG", "");
+    b.root_module.addCMacro("PIC", "1");
 }
 
 const DCFLAGS = &.{ "-Wall", "-fno-fat-lto-objects", "-std=c11" };
@@ -24,6 +25,7 @@ const DCFLAGS = &.{ "-Wall", "-fno-fat-lto-objects", "-std=c11" };
 fn createObject(b: *std.Build, opt: TestOptimizeTarget, options: std.Build.ObjectOptions) *std.Build.Step.Compile {
     const obj = b.addObject(options);
     setDefaultFlags(obj, opt);
+    obj.root_module.pic = true;
     return obj;
 }
 
@@ -32,6 +34,7 @@ fn createExe(b: *std.Build, opt: TestOptimizeTarget, options: std.Build.Executab
     setDefaultFlags(obj, opt);
     obj.want_lto = true;
     obj.root_module.strip = obj.root_module.strip orelse true;
+    obj.root_module.pic = true;
     b.installArtifact(obj);
     return obj;
 }
@@ -99,6 +102,42 @@ fn createMPackTest(
             c.root_module.addCMacro("MPACK_WRITE_TRACKING", "1");
         }
     }
+
+    return exe;
+}
+
+const ZigpakTestOptions = struct {
+    optimize: std.builtin.OptimizeMode,
+    target: std.Build.ResolvedTarget,
+    zigpak: *std.Build.Module,
+    source_file: std.Build.LazyPath,
+};
+
+fn createZigpakTest(b: *std.Build, name: []const u8, opts: ZigpakTestOptions) *std.Build.Step.Compile {
+    const exe = b.addExecutable(.{
+        .name = name,
+        .optimize = opts.optimize,
+        .target = opts.target,
+        .link_libc = true,
+        .root_source_file = b.path("./src/common/glue.zig"),
+        .strip = true,
+        .pic = true,
+    });
+    exe.want_lto = true;
+    const content = b.createModule(.{
+        .root_source_file = opts.source_file,
+        .optimize = opts.optimize,
+        .target = opts.target,
+    });
+    content.addImport("zigpak", opts.zigpak);
+
+    const frameworkM = b.modules.get("benchmark") orelse @panic("benchmark module not found");
+    content.addImport("benchmark", frameworkM);
+
+    exe.root_module.addImport("content", content);
+    exe.root_module.addImport("benchmark", frameworkM);
+
+    b.installArtifact(exe);
 
     return exe;
 }
@@ -319,11 +358,11 @@ pub fn build(b: *std.Build) void {
         const run = createRunBenchmark(runQ, exe, testObjectSizes.constSlice());
         run.step.dependOn(&setupMsgpackData.step);
     }
-
-    const zigpakM = b.dependency("zigpak", .{
+    const zigpakD = b.dependency("zigpak", .{
         .target = target,
         .optimize = optimize,
-    }).module("zigpak");
+    });
+    const zigpakM = zigpakD.module("zigpak");
 
     const frameworkM = b.addModule("benchmark", .{
         .root_source_file = b.path("./src/common/core.zig"),
@@ -334,24 +373,29 @@ pub fn build(b: *std.Build) void {
     frameworkM.addObject(framework);
 
     {
-        const exe = b.addExecutable(.{
-            .name = "zigpak-read",
+        const exe = createZigpakTest(b, "zigpak-read", .{
             .optimize = optimize,
             .target = target,
-            .link_libc = true,
-            .root_source_file = b.path("./src/common/glue.zig"),
-            .strip = true,
+            .zigpak = zigpakM,
+            .source_file = b.path("./src/zigpak/zigpak-read.zig"),
         });
-        exe.want_lto = true;
-        const content = b.createModule(.{
-            .root_source_file = b.path("./src/zigpak/zigpak-read.zig"),
+
+        _ = createRunBenchmark(runQ, exe, testObjectSizes.constSlice());
+
+        const run = b.addRunArtifact(exe);
+        run.addArgs(testObjectSizes.constSlice());
+        stepZigpak.dependOn(&run.step);
+
+        stepCheck.dependOn(&exe.step);
+    }
+
+    {
+        const exe = createZigpakTest(b, "zigpak-write", .{
             .optimize = optimize,
             .target = target,
+            .zigpak = zigpakM,
+            .source_file = b.path("./src/zigpak/zigpak-write.zig"),
         });
-        content.addImport("zigpak", zigpakM);
-        content.addImport("benchmark", frameworkM);
-        exe.root_module.addImport("content", content);
-        exe.root_module.addImport("benchmark", frameworkM);
 
         _ = createRunBenchmark(runQ, exe, testObjectSizes.constSlice());
 

@@ -3,7 +3,6 @@ const core = @import("benchmark");
 const zigpak = @import("zigpak");
 const hash = core.hash;
 
-gpa: std.heap.GeneralPurposeAllocator(.{}) = .{},
 file: core.DataFile,
 
 pub fn getMetaInfo() core.MetaInfo {
@@ -26,34 +25,34 @@ pub fn deinit(self: *@This()) void {
     self.file.deinit();
 }
 
-fn hashElement(unpack: *zigpak.Unpack, hasho: *u32, head: zigpak.Header) !void {
+fn hashElement(unpack: *zigpak.Unpack, hasho: *u32, head: zigpak.Header) void {
     hasho.* = switch (head.type.family()) {
         .nil => hash(void, hasho.*, {
             _ = unpack.raw(head); // Workaround a bug in unpack.nil
         }),
-        .bool => hash(bool, hasho.*, try unpack.bool(head)),
-        .int => hash(i64, hasho.*, try unpack.int(i64, head)),
-        .uint => hash(u64, hasho.*, try unpack.int(u64, head)),
-        .float => hash(f64, hasho.*, try unpack.float(f64, head)),
+        .bool => hash(bool, hasho.*, unpack.bool(head) catch unreachable),
+        .int => hash(i64, hasho.*, unpack.int(i64, head) catch unreachable),
+        .uint => hash(u64, hasho.*, unpack.int(u64, head) catch unreachable),
+        .float => hash(f64, hasho.*, unpack.float(f64, head) catch unreachable),
         .str, .bin => hash([]const u8, hasho.*, unpack.raw(head)),
         .array => hashArray: {
-            var iter = try unpack.array(head);
+            var iter = unpack.array(head) catch unreachable;
             var h = hasho.*;
-            while (try iter.peek()) |peeki| {
+            while (iter.peek() catch unreachable) |peeki| {
                 const headi = iter.next(peeki);
-                try hashElement(unpack, &h, headi);
+                hashElement(unpack, &h, headi);
             }
             break :hashArray h;
         },
         .map => hashMap: {
-            var iter = try unpack.map(head);
+            var iter = unpack.map(head) catch unreachable;
             var h = hasho.*;
-            while (try iter.peek()) |peekk| {
+            while (iter.peek() catch unreachable) |peekk| {
                 const headk = iter.next(peekk);
-                try hashElement(unpack, &h, headk);
-                const peekv = try iter.peek() orelse unreachable;
+                hashElement(unpack, &h, headk);
+                const peekv = iter.peek() catch unreachable orelse unreachable;
                 const headv = iter.next(peekv);
-                try hashElement(unpack, &h, headv);
+                hashElement(unpack, &h, headv);
             }
             break :hashMap h;
         },
@@ -61,14 +60,14 @@ fn hashElement(unpack: *zigpak.Unpack, hasho: *u32, head: zigpak.Header) !void {
     };
 }
 
-pub fn run(self: @This(), hasho: *u32) !void {
+pub fn run(self: *@This(), hasho: *u32) !void {
     const data = try core.copyIfInSitu(self.file.data);
     defer core.freeIfInSitu(data);
 
     var unpack = zigpak.Unpack.init(data);
 
-    const peek = try unpack.peek();
+    const peek = unpack.peek() catch unreachable;
     const head = unpack.next(peek);
 
-    try hashElement(&unpack, hasho, head);
+    hashElement(&unpack, hasho, head);
 }
