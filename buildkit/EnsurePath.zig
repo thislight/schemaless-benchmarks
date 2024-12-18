@@ -1,3 +1,35 @@
+//! Ensure specific directory exists.
+//!
+//! This step ensures the specific directory exists
+//! after it's completed.
+//!
+//! ```zig
+//! const b: *std.Build;
+//!
+//! const buildDirStep = EnsurePath.create(b, .{
+//!     // The .sub_path allows nesting.
+//!     // In this example, ./build and ./build/generated both will be created.
+//!     .sub_path = "./build/generated",
+//!     // without the .root, the different root is the build root
+//!     // (b.build_root)
+//! });
+//!
+//! // Use .path() to get the lazy path
+//! const buildDir = buildDirStep.path();
+//!
+//! const exe = b.addExecutable(.{
+//!     .name = "spam",
+//!     .target = target,
+//!     .optimize = optimize,
+//!     .root_source_file = buildDir.path("./generated_src.zig"),
+//! });
+//!
+//! const run: *std.Build.Step.Run;
+//!
+//! // When specific step needs the path implicitly,
+//! // declare the dependency directly.
+//! run.step.dependOn(&buildDir.step);
+//! ```
 const std = @import("std");
 
 const EnsurePath = @This();
