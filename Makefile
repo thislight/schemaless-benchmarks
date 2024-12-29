@@ -12,8 +12,8 @@ ifeq ($(SIZE), 1)
 	OPTCONFIG := -Os -DBENCHMARK_SIZE_OPTIMIZED=1
 	OBJECT_SIZES := 2
 	RESULTS_ARG := size
-	RESULTS_DOC := results-size
-	RESULTS_EXTENDED_DOC := results-size-extended
+	RESULTS_DOC := results
+	RESULTS_EXTENDED_DOC := results-extended
 else
 	OPTCONFIG := -O3
 	OBJECT_SIZES := 2 4
