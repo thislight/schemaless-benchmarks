@@ -29,7 +29,7 @@
         },
         .zigpak = .{
             .url = "https://github.com/thislight/zigpak/archive/refs/tags/v0.3.0.tar.gz",
-            .hash = "1220fdf4ade4c4b70f6df4ea7b919358494369e791cd49884f02845d1162aaa6082e",
+            .hash = "1220b16beb585c4f9023c8877b3cb42a3c5ca7a97531c413d6a6e684dbbcf7a41766",
         },
     },
     .paths = .{
