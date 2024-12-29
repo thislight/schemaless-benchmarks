@@ -87,7 +87,7 @@ $(RESULTS_DOC).md: results.csv tools/results.py
 	echo "" > $(RESULTS_DOC).md
 	grep "^model name" /proc/cpuinfo | head -n 1 | sed 's/^.*\s*:/CPU model:/' | sed 's/$$/  /' >> $(RESULTS_DOC).md
 	grep "^bogomips" /proc/cpuinfo   | head -n 1 | sed 's/^.*\s*:/Bogomips:/' >> $(RESULTS_DOC).md
-	date >> $(RESULTS_DOC).md
+	TZ="UTC" date -R >> $(RESULTS_DOC).md
 	git rev-parse HEAD >> $(RESULTS_DOC).md
 	tools/results.py $(RESULTS_ARG) >> $(RESULTS_DOC).md
 
@@ -95,7 +95,7 @@ $(RESULTS_EXTENDED_DOC).md: results.csv tools/results.py
 	echo "" > $(RESULTS_EXTENDED_DOC).md
 	grep "^model name" /proc/cpuinfo | head -n 1 | sed 's/^.*\s*:/CPU model:/' | sed 's/$$/  /' >> $(RESULTS_EXTENDED_DOC).md
 	grep "^bogomips" /proc/cpuinfo   | head -n 1 | sed 's/^.*\s*:/Bogomips:/' >> $(RESULTS_EXTENDED_DOC).md
-	date >> $(RESULTS_EXTENDED_DOC).md
+	TZ="UTC" date -R >> $(RESULTS_EXTENDED_DOC).md
 	git rev-parse HEAD >> $(RESULTS_EXTENDED_DOC).md
 	tools/results.py $(RESULTS_ARG) extended >> $(RESULTS_EXTENDED_DOC).md
 
