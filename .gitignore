@@ -1,8 +1,9 @@
 build/
 contrib/
 results.md
-results-extended.md
 results.csv
+results-extended.md
+!results/**
 
 .zig-cache/
 zig-out/
