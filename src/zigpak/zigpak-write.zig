@@ -5,7 +5,7 @@ const zigpak = @import("zigpak");
 pub fn getMetaInfo() core.MetaInfo {
     return .{
         .is_benchmark = true,
-        .version = "0.2.1",
+        .version = "0.3.0",
         .format = "MessagePack",
         .filename = @src().file,
     };

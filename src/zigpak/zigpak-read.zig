@@ -10,7 +10,7 @@ pub fn getMetaInfo() core.MetaInfo {
         .filename = @src().file,
         .format = "MessagePack",
         .is_benchmark = true,
-        .version = "0.2.1",
+        .version = "0.3.0",
     };
 }
 
@@ -28,13 +28,13 @@ pub fn deinit(self: *@This()) void {
 fn hashElement(unpack: *zigpak.Unpack, hasho: *u32, head: zigpak.Header) void {
     hasho.* = switch (head.type.family()) {
         .nil => hash(void, hasho.*, {
-            _ = unpack.raw(head); // Workaround a bug in unpack.nil
+            _ = unpack.nil(?*anyopaque, head) catch unreachable;
         }),
         .bool => hash(bool, hasho.*, unpack.bool(head) catch unreachable),
         .int => hash(i64, hasho.*, unpack.int(i64, head) catch unreachable),
         .uint => hash(u64, hasho.*, unpack.int(u64, head) catch unreachable),
         .float => hash(f64, hasho.*, unpack.float(f64, head) catch unreachable),
-        .str, .bin => hash([]const u8, hasho.*, unpack.raw(head)),
+        .str, .bin => hash([]const u8, hasho.*, unpack.raw(head) catch unreachable),
         .array => hashArray: {
             var iter = unpack.array(head) catch unreachable;
             var h = hasho.*;

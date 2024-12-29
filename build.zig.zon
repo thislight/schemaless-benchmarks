@@ -28,8 +28,8 @@
             .hash = "12201bb7ad4b9fad19bb622694011fd185e063c7a047e6234586343314b911d70856",
         },
         .zigpak = .{
-            .url = "https://github.com/thislight/zigpak/archive/refs/tags/v0.2.1.tar.gz",
-            .hash = "122024ddfcc7c8ae762d0949b4fe4f8586b736a9426dc412cc4a8ecc23750914d694",
+            .url = "https://github.com/thislight/zigpak/archive/refs/tags/v0.3.0.tar.gz",
+            .hash = "1220fdf4ade4c4b70f6df4ea7b919358494369e791cd49884f02845d1162aaa6082e",
         },
     },
     .paths = .{
